@@ -23,6 +23,7 @@
 #include "datachannel.hpp"
 
 #include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
 
 #include <exception>
 #include <stdexcept>
@@ -38,6 +39,9 @@ extern int rtcGetBufferedAmount(int dc);
 extern void rtcSetBufferedAmountLowThreshold(int dc, int threshold);
 extern int rtcSendMessage(int dc, const char *buffer, int size);
 extern void rtcSetUserPointer(int i, void *ptr);
+extern bool getDataChannelOrdered(int dc);
+extern int getDataChannelMaxPacketLifeTime(int dc);
+extern int getDataChannelMaxRetransmits(int dc);
 }
 
 namespace rtc {
@@ -138,6 +142,25 @@ size_t DataChannel::bufferedAmount() const {
 }
 
 std::string DataChannel::label() const { return mLabel; }
+
+Reliability DataChannel::reliability() const {
+    Reliability reliability;
+    using namespace emscripten;
+    using namespace std::chrono_literals;
+    bool ordered = getDataChannelOrdered(mId);
+    int maxPacketLifeTime = getDataChannelMaxPacketLifeTime(mId);
+    int maxRetransmits = getDataChannelMaxRetransmits(mId);
+    reliability.unordered = !ordered;
+    if (maxPacketLifeTime >= 0) {
+        reliability.type = Reliability::Type::Timed;
+        reliability.rexmit = 1ms * maxPacketLifeTime;
+    }
+    else if (maxRetransmits >= 0) {
+        reliability.type = Reliability::Type::Rexmit;
+        reliability.rexmit = maxRetransmits;
+    }
+    return reliability;
+}
 
 void DataChannel::setBufferedAmountLowThreshold(size_t amount) {
 	if (!mId)

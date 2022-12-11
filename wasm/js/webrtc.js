@@ -148,6 +148,29 @@
 			},
 		},
 
+
+    getDataChannelOrdered: function(dc) {
+      if(!dc) return;
+      var dataChannel = WEBRTC.dataChannelsMap[dc];
+      if(dataChannel) {
+        return dataChannel.ordered;
+      }
+    },
+    getDataChannelMaxPacketLifeTime: function(dc) {
+      if(!dc) return;
+      var dataChannel = WEBRTC.dataChannelsMap[dc];
+      if(dataChannel) {
+        return dataChannel.maxPacketLifeTime == null ? -1 : dataChannel.maxPacketLifeTime;
+      }
+    },
+    getDataChannelMaxRetransmits: function(dc) {
+      if(!dc) return;
+      var dataChannel = WEBRTC.dataChannelsMap[dc];
+      if(dataChannel) {
+        return dataChannel.maxRetransmits == null ? -1 : dataChannel.maxRetransmits;
+      }
+    },
+
 		rtcCreatePeerConnection: function(pUrls, pUsernames, pPasswords, nIceServers) {
 			if(!window.RTCPeerConnection) return 0;
 			var iceServers = [];
